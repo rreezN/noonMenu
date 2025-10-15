@@ -35,13 +35,19 @@ def open_pdf_and_cleanup(pdf_path):
     """Open the PDF file in Preview and delete it after closing (macOS)."""
     # AppleScript to open PDF in Preview and wait until closed
     apple_script = f'''
-    tell application "Preview"
-        open POSIX file "{pdf_path}"
-        activate
-        repeat while (count of windows) > 0
-            delay 1
-        end repeat
-    end tell
+        tell application "Preview"
+            open POSIX file "{pdf_path}"
+            activate
+            set startTime to current date
+            repeat while ((current date) - startTime) < 30
+                if (count of windows) = 0 then
+                    quit
+                    return
+                end if
+                delay 1
+            end repeat
+            if (count of windows) > 0 then quit
+        end tell
     '''
     subprocess.run(['osascript', '-e', apple_script])
     
