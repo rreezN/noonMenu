@@ -47,7 +47,7 @@ def _clean_up(pdf_path, current_week_num):
         pass
 
 
-def open_pdf_and_cleanup(pdf_path, current_week_num):
+def open_pdf_and_cleanup(pdf_path, current_week_num, buffer_time=30):
     """Open the PDF file in Preview and delete it after closing (macOS)."""
     # AppleScript to open PDF in Preview and wait until closed
     apple_script = f'''
@@ -55,7 +55,7 @@ def open_pdf_and_cleanup(pdf_path, current_week_num):
             open POSIX file "{pdf_path}"
             activate
             set startTime to current date
-            repeat while ((current date) - startTime) < 30
+            repeat while ((current date) - startTime) < {buffer_time} 
                 if (count of windows) = 0 then
                     quit
                     return
@@ -69,14 +69,18 @@ def open_pdf_and_cleanup(pdf_path, current_week_num):
     
     _clean_up(pdf_path, current_week_num)
 
-
-def main():
-    """Main function to fetch and display the menu PDF."""
-    # --- Use argparse instead of sys.argv ---
+def parse_args():
+    """Parse command line arguments."""
     parser = argparse.ArgumentParser(description="Download and open Noon CPH menu PDF for a specific day.")
     parser.add_argument("day", nargs="?", default="today",
                         help="Day to fetch menu for (today, tomorrow, or weekday name in English or Danish)")
-    args = parser.parse_args()
+    parser.add_argument("--buffer-time", type=int, default=30,
+                        help="Time in seconds to keep the PDF open after closing before cleanup (default: 30 seconds)")
+    return parser.parse_args()
+
+def main():
+    """Main function to fetch and display the menu PDF."""
+    args = parse_args()
 
     # --- Parse the target day ---
     target_idx = parse_day_arg(args.day)
@@ -135,7 +139,7 @@ def main():
                 for chunk in r.iter_content(chunk_size=8192):
                     f.write(chunk)
     # --- Invoke the function to open and clean up the PDF ---
-    open_pdf_and_cleanup(pdf_path, current_week_num)
+    open_pdf_and_cleanup(pdf_path, current_week_num, buffer_time=args.buffer_time)
 
 if __name__ == "__main__":
     main()
