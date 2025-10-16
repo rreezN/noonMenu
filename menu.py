@@ -31,7 +31,23 @@ def parse_day_arg(arg):
         print("Unknown day argument. Defaulting to today.")
         return today_idx
 
-def open_pdf_and_cleanup(pdf_path):
+def get_week_number():
+    """Return the current ISO week number."""
+    return datetime.datetime.now().isocalendar()[1]
+
+def _clean_up(pdf_path, current_week_num):
+    """Given the pdf_path is on the following format: .../downloads/week_x/day_of_week.pdf, delete the week_x directory if the current week number is greater than it."""
+    week_dir = os.path.dirname(pdf_path)
+    try:
+        week_num = int(week_dir.split("_")[-1])
+        if current_week_num > week_num:
+            # Delete the entire week directory
+            subprocess.run(['rm', '-rf', week_dir])
+    except ValueError:
+        pass
+
+
+def open_pdf_and_cleanup(pdf_path, current_week_num):
     """Open the PDF file in Preview and delete it after closing (macOS)."""
     # AppleScript to open PDF in Preview and wait until closed
     apple_script = f'''
@@ -51,9 +67,8 @@ def open_pdf_and_cleanup(pdf_path):
     '''
     subprocess.run(['osascript', '-e', apple_script])
     
-    # Delete the PDF after the viewer closes
-    if os.path.exists(pdf_path):
-        os.remove(pdf_path)
+    _clean_up(pdf_path, current_week_num)
+
 
 def main():
     """Main function to fetch and display the menu PDF."""
@@ -76,6 +91,8 @@ def main():
     CHROME_DRIVER_PATH = "/opt/homebrew/bin/chromedriver"  # replace with your path
 
     # Ensure download directory exists
+    current_week_num = get_week_number()
+    DOWNLOAD_DIR = os.path.join(DOWNLOAD_DIR, f"week_{current_week_num}")
     os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
     # --- Set up Selenium WebDriver with headless Chrome ---
@@ -109,14 +126,16 @@ def main():
 
     # --- Download the PDF ---
     pdf_path = os.path.join(DOWNLOAD_DIR, os.path.basename(pdf_url))
-    with requests.get(pdf_url, stream=True) as r:
-        r.raise_for_status()
-        with open(pdf_path, "wb") as f:
-            for chunk in r.iter_content(chunk_size=8192):
-                f.write(chunk)
-
+    if os.path.exists(pdf_path):
+        pass
+    else:
+        with requests.get(pdf_url, stream=True) as r:
+            r.raise_for_status()
+            with open(pdf_path, "wb") as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    f.write(chunk)
     # --- Invoke the function to open and clean up the PDF ---
-    open_pdf_and_cleanup(pdf_path)
+    open_pdf_and_cleanup(pdf_path, current_week_num)
 
 if __name__ == "__main__":
     main()
