@@ -12,7 +12,7 @@ python3 menu.py today --buffer-time 30
 ```
 
 # Nice to know
-The scripts automatically creates a `download` directory in your root folder. Within this folder, a subfolder called `week_x` will be created, where ´x´ corresponds to the week number from which the menu was downloaded from. The pdf file will be downloaded to this directory, and kept there until a new week is started. 
+The scripts automatically creates a `download` directory in your root folder. Within this folder, a subfolder called `week_x` will be created, where `x` corresponds to the week number from which the menu was downloaded from. The pdf file will be downloaded to this directory, and kept there until a new week is started. 
 
 This is to ensure that you do not have to wait for the file to be downloaded everytime.
 
