@@ -98,41 +98,41 @@ def main():
     current_week_num = get_week_number()
     DOWNLOAD_DIR = os.path.join(DOWNLOAD_DIR, f"week_{current_week_num}")
     os.makedirs(DOWNLOAD_DIR, exist_ok=True)
-
-    # --- Set up Selenium WebDriver with headless Chrome ---
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--disable-gpu")
-    service = Service(CHROME_DRIVER_PATH)
-    driver = webdriver.Chrome(service=service, options=chrome_options)
-    # fetch the page
-    driver.get(URL)
-
+    
     # --- Map weekday index to Danish day names ---
     # NOTE the site is in Danish, why we need the Danish names for matching
     weekday_map_da = {0: "mandag", 1: "tirsdag", 2: "onsdag", 3: "torsdag", 4: "fredag"}
     target_day_da = weekday_map_da[target_idx]
-
-    # --- Find the link for the target day ---
-    buttons = driver.find_elements(By.CSS_SELECTOR, "div.div-block-23.bred a")
-    pdf_url = None
-    for btn in buttons:
-        if btn.text.strip().lower() == target_day_da:
-            pdf_url = btn.get_attribute("href")
-            break
-    # Clean up the driver
-    driver.quit()
-
-    # If no PDF link found, exit
-    if not pdf_url:
-        print(f"Could not find PDF for {target_day_da}")
-        return
-
-    # --- Download the PDF ---
-    pdf_path = os.path.join(DOWNLOAD_DIR, os.path.basename(pdf_url))
+    
+    # --- Specify the PDF path ---
+    pdf_path = os.path.join(DOWNLOAD_DIR, target_day_da + ".pdf")
     if os.path.exists(pdf_path):
         pass
     else:
+        # --- Set up Selenium WebDriver with headless Chrome ---
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--disable-gpu")
+        service = Service(CHROME_DRIVER_PATH)
+        driver = webdriver.Chrome(service=service, options=chrome_options)
+        # fetch the page
+        driver.get(URL)
+
+        # --- Find the link for the target day ---
+        buttons = driver.find_elements(By.CSS_SELECTOR, "div.div-block-23.bred a")
+        pdf_url = None
+        for btn in buttons:
+            if btn.text.strip().lower() == target_day_da:
+                pdf_url = btn.get_attribute("href")
+                break
+        # Clean up the driver
+        driver.quit()
+
+        # If no PDF link found, exit
+        if not pdf_url:
+            print(f"Could not find PDF for {target_day_da}")
+            return
+
         with requests.get(pdf_url, stream=True) as r:
             r.raise_for_status()
             with open(pdf_path, "wb") as f:
