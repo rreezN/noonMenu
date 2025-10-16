@@ -1,6 +1,7 @@
-# noonMenu
+# noonMenu: Automation script
 Get the noon menu for today - https://www.nooncph.dk/ugens-menuer
 * Currently it only supports MacOS, as it uses Apple Script.
+* You need `chromedriver` for this to script to work, and you need to allow python to execute apple scripts.
 
 # Arguments
 The code can be ran with a simple `python3 menu.py` statement, or you can add an additional argument:  
