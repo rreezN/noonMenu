@@ -7,7 +7,7 @@ The code can be ran with a simple `python3 menu.py` statement, or you can add an
 * `day`: specifies which day to download the menu from. Defaults to `today` if not specified, otherwise (`today`,`tomorrow`, `monday-friday`)
 * `--buffer-time`: The time between opening the menu and automatically closing it if not closed by user. Defaults to `30` seconds.
 ```
-python3 menu.py monday
+python3 menu.py today --buffer-time 30
 ```
 
 # Nice to know
