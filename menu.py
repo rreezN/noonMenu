@@ -38,13 +38,20 @@ def get_week_number():
 def _clean_up(pdf_path, current_week_num):
     """Given the pdf_path is on the following format: .../downloads/week_x/day_of_week.pdf, delete the week_x directory if the current week number is greater than it."""
     week_dir = os.path.dirname(pdf_path)
-    try:
-        week_num = int(week_dir.split("_")[-1])
-        if current_week_num > week_num:
-            # Delete the entire week directory
-            subprocess.run(['rm', '-rf', week_dir])
-    except ValueError:
-        pass
+    download_dir = os.path.dirname(week_dir)
+    # retrieve all directories in download_dir
+    dirs = [d for d in os.listdir(download_dir) if os.path.isdir(os.path.join(download_dir, d))]
+    # check if week number is less than current_week_num
+    for d in dirs:
+        if d.startswith("week_"):
+            full_week_dir = os.path.join(download_dir, d)
+            try:
+                week_num = int(d.split("_")[-1])
+                if week_num < current_week_num:
+                    # Delete the entire week directory
+                    subprocess.run(['rm', '-rf', full_week_dir])
+            except ValueError:
+                pass
 
 
 def open_pdf_and_cleanup(pdf_path, current_week_num, buffer_time=30):
@@ -91,7 +98,7 @@ def main():
 
     # --- Configuration ---
     URL = "https://www.nooncph.dk/ugens-menuer"
-    DOWNLOAD_DIR = os.path.join(os.getcwd(), "downloads")
+    DOWNLOAD_DIR = os.path.join(os.getcwd(), "DocumentsLocal/Repos/noonMenu/downloads")
     CHROME_DRIVER_PATH = "/opt/homebrew/bin/chromedriver"  # replace with your path
 
     # Ensure download directory exists
